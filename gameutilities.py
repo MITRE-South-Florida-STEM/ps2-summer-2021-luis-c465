@@ -1,4 +1,5 @@
 import random as ran
+import re   # Regular expresions
 
 def load_words(WORDLIST_FILENAME = "words.txt") -> list:
     """Returns a list of valid words. Words are strings of lowercase letters.
@@ -43,13 +44,12 @@ def get_guessed_word(secret_word, letters_guessed) -> str:
     returns: string, comprised of letters, underscores (_), and spaces that represents
       which letters in secret_word have been guessed so far.
     '''
-    # FILL IN YOUR CODE HERE AND DELETE "pass"
     guessed_word = ""
     for letter in secret_word:
         if letter in letters_guessed:
             guessed_word += letter
         else:
-            guessed_word += "_"
+            guessed_word += "_ "
     
     return guessed_word
 
@@ -81,6 +81,16 @@ def update_warning_and_guesses(warning: int, guesses: int) -> tuple:
     else:
         return (warning, guesses - 1)
 
+def word_with_gaps_to_regex(word: str) -> re:
+    return re.compile(word.replace("_ ", ".") + "$")
+
+def list_to_str(l: list, s = '') -> str:
+    return s.join(str(i) for i in l)
+
+def get_total_score(guesses_remaining: int, secret_word: str) -> int:
+    num_unique_letters = len(set(secret_word))
+    return guesses_remaining * num_unique_letters
+
 def match_with_gaps(my_word, other_word) -> bool:
     '''
     my_word: string with _ characters, current guess of secret word
@@ -90,16 +100,9 @@ def match_with_gaps(my_word, other_word) -> bool:
         _ , and my_word and other_word are of the same length;
         False otherwise: 
     '''
-    if len(my_word) != len(other_word):
-        return False
-    
-    for letter in my_word:
-        if letter != '_' and letter != other_word:
-            return False
-    
-    return True
+    return bool(word_with_gaps_to_regex(my_word).match(other_word))
 
-def show_possible_matches(my_word):
+def show_possible_matches(my_word, wordlist: list):
     '''
     my_word: string with _ characters, current guess of secret word
     returns: nothing, but should print out every word in wordlist that matches my_word
@@ -109,5 +112,9 @@ def show_possible_matches(my_word):
              that has already been revealed.
 
     '''
-    # TODO: FILL IN YOUR CODE HERE AND DELETE "pass"
-    pass
+    word_regex = word_with_gaps_to_regex(my_word)
+    matches = list(filter(word_regex.match, wordlist))
+    if len(matches) != 0:
+        print(list_to_str(matches, s=" "))
+    else:
+        print("No matches found ")
